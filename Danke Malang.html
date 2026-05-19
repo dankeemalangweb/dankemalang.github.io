@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Danke Malang — Walking Tour Bersejarah</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue:  '#1A73C8',
+              dark:  '#0D4F8C',
+              light: '#E6F1FB',
+              black: '#181818',
+              gold:  '#F5A623',
+            }
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            body:    ['"DM Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    *, body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3, .font-display { font-family: 'Playfair Display', Georgia, serif; }
+
+    /* Hero parallax-ish bg */
+    .hero-bg {
+      background-image:
+        linear-gradient(to bottom, rgba(13,79,140,0.82) 0%, rgba(24,24,24,0.88) 100%),
+        url('pasar besar malng.jpeg');
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* subtle noise texture overlay */
+    .noise::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.08;
+    }
+
+    .scroll-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      opacity: 0.7;
+    }
+    .scroll-indicator .line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, white, transparent);
+      animation: scrollLine 2s ease-in-out infinite;
+    }
+    @keyframes scrollLine {
+      0%   { transform: scaleY(0); transform-origin: top; }
+      50%  { transform: scaleY(1); transform-origin: top; }
+      51%  { transform: scaleY(1); transform-origin: bottom; }
+      100% { transform: scaleY(0); transform-origin: bottom; }
+    }
+
+    .card-hover {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    }
+
+    /* Glass cards for pretest */
+    .glass-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(8px);
+    }
+
+    /* Route card gradient top */
+    .route-img {
+      background: linear-gradient(135deg, #0D4F8C 0%, #1A73C8 60%, #1a4a7a 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .route-img::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 20px,
+        rgba(255,255,255,0.025) 20px,
+        rgba(255,255,255,0.025) 40px
+      );
+    }
+    .route-img::after {
+      content: '';
+      position: absolute;
+      bottom: -30px; right: -30px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* Nav shadow */
+    nav { box-shadow: 0 1px 0 rgba(0,0,0,0.08); }
+
+    /* Stat number decoration */
+    .stat-val { font-family: 'Playfair Display', serif; }
+
+    /* Avatar circles */
+    .avatar { font-family: 'Playfair Display', serif; }
+
+    /* Gold pill */
+    .gold-pill {
+      border: 1.5px solid #F5A623;
+      color: #F5A623;
+    }
+  </style>
+</head>
+<body class="bg-white text-[#181818] antialiased">
+
+<!-- ═══════════════════════════════════════════════
+     1. NAVBAR
+═══════════════════════════════════════════════ -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white flex items-center justify-between px-[5%] py-3">
+  <a href="#" aria-label="Danke Malang Home">
+    <img src="logotype Danke Malang type 2.png" alt="Danke Malang" class="h-10 w-auto object-contain" onerror="this.style.display='none'; this.nextSibling.style.display='block'"/>
+    <span style="display:none; font-family:'Playfair Display',serif; font-weight:700; font-size:1.25rem; color:#1A73C8;">Danke Malang</span>
+  </a>
+
+  <div class="hidden md:flex items-center gap-8">
+    <a href="#rute"     class="text-sm font-medium text-[#181818] hover:text-[#1A73C8] transition-colors">Rute</a>
+    <a href="#pretest"  class="text-sm font-medium text-[#181818] hover:text-[#1A73C8] transition-colors">Pre-test</a>
+    <a href="#testimoni" class="text-sm font-medium text-[#181818] hover:text-[#1A73C8] transition-colors">Testimoni</a>
+  </div>
+
+  <a href="https://wa.me/6285159883504" target="_blank"
+     class="bg-[#1A73C8] hover:bg-[#0D4F8C] text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors">
+    Pesan Sekarang
+  </a>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════════
+     2. HERO
+═══════════════════════════════════════════════ -->
+<section class="hero-bg noise relative min-h-screen flex flex-col items-center justify-center text-center px-[5%] pt-20 pb-24">
+  <!-- Badge -->
+  <div class="gold-pill inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full mb-8">
+    </span> Walking Tour · Kota Malang
+  </div>
+
+  <!-- Headline -->
+  <h1 class="font-display text-5xl md:text-7xl font-bold text-white leading-tight max-w-4xl mb-6">
+    Kulik Sejarah,<br>
+    <em class="not-italic text-[#1A73C8]">Temukan Keajaiban</em>
+  </h1>
+
+  <!-- Subtext -->
+  <p class="text-white/75 text-base md:text-lg max-w-xl mb-10 leading-relaxed font-light">
+    Jelajahi sudut-sudut bersejarah Kota Malang dengan pemandu berpengalaman. Setiap langkah membawa cerita, setiap tempat menyimpan warisan yang menunggu untuk dikulik.
+  </p>
+
+  <!-- CTAs -->
+  <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+    <a href="#rute"
+       class="bg-[#1A73C8] hover:bg-[#0D4F8C] text-white font-semibold px-7 py-3.5 rounded-full transition-colors text-sm">
+      Lihat Rute Tur
+    </a>
+    <a href="https://wa.me/6285159883504" target="_blank"
+       class="border border-white/60 text-white hover:bg-white/10 font-semibold px-7 py-3.5 rounded-full transition-colors text-sm">
+      Hubungi Kami
+    </a>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 scroll-indicator">
+    <div class="line"></div>
+    <span class="text-white/50 text-[10px] tracking-widest uppercase">Scroll</span>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     3. STATS STRIP
+═══════════════════════════════════════════════ -->
+<div class="bg-[#1A73C8] py-10 px-[5%]">
+  <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+    <div>
+      <div class="stat-val text-3xl font-bold text-white">3</div>
+      <div class="text-white/80 text-sm mt-1">Rute Pilihan</div>
+    </div>
+    <div>
+      <div class="stat-val text-3xl font-bold text-white">4</div>
+      <div class="text-white/80 text-sm mt-1">Pilihan Bahasa</div>
+    </div>
+    <div>
+      <div class="stat-val text-3xl font-bold text-white">Rp 60.000</div>
+      <div class="text-white/80 text-sm mt-1">per Orang</div>
+    </div>
+    <div>
+      <div class="stat-val text-3xl font-bold text-white">10+</div>
+      <div class="text-white/80 text-sm mt-1">Destinasi Bersejarah</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     4. ABOUT
+═══════════════════════════════════════════════ -->
+<section class="bg-gray-50 py-20 px-[5%]">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-14 items-center">
+
+    <!-- Left -->
+    <div>
+      <span class="text-xs font-semibold tracking-widest uppercase text-[#1A73C8]">Tentang Kami</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold mt-3 mb-10 leading-tight text-[#181818]">
+        Wisata Jalan Kaki<br>yang Tak Terlupakan
+      </h2>
+
+      <div class="space-y-8">
+        <!-- Feature 1 -->
+        <div class="flex gap-5 items-start">
+          <div class="shrink-0 w-12 h-12 rounded-2xl bg-[#E6F1FB] flex items-center justify-center text-xl">🎓</div>
+          <div>
+            <h3 class="font-semibold text-[#181818] mb-1">Eduwisata Interaktif</h3>
+            <p class="text-gray-500 text-sm leading-relaxed">Dilengkapi pre-test &amp; post-test digital agar pengetahuan sejarah Anda terukur dan bertambah.</p>
+          </div>
+        </div>
+        <!-- Feature 2 -->
+        <div class="flex gap-5 items-start">
+          <div class="shrink-0 w-12 h-12 rounded-2xl bg-[#E6F1FB] flex items-center justify-center text-xl">🌐</div>
+          <div>
+            <h3 class="font-semibold text-[#181818] mb-1">Pemandu Berpengalaman</h3>
+            <p class="text-gray-500 text-sm leading-relaxed">Walking tour informatif dan ramah dalam 4 bahasa: Indonesia, Inggris, Jerman, dan Mandarin.</p>
+          </div>
+        </div>
+        <!-- Feature 3 -->
+        <div class="flex gap-5 items-start">
+          <div class="shrink-0 w-12 h-12 rounded-2xl bg-[#E6F1FB] flex items-center justify-center text-xl">🗺️</div>
+          <div>
+            <h3 class="font-semibold text-[#181818] mb-1">Rute Bersejarah Terkurasi</h3>
+            <p class="text-gray-500 text-sm leading-relaxed">3 rute walking tour yang mengunjungi landmark ikonik dan bersejarah di Kota Malang.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: decorative card -->
+    <div class="relative">
+      <div class="bg-[#0D4F8C] rounded-3xl p-10 text-white relative overflow-hidden min-h-[320px] flex flex-col justify-end card-hover">
+        <!-- Decorative circles -->
+        <div class="absolute top-0 right-0 w-56 h-56 rounded-full bg-[#1A73C8]/40 -translate-y-1/3 translate-x-1/3"></div>
+        <div class="absolute top-16 right-16 w-28 h-28 rounded-full bg-white/10"></div>
+        <div class="absolute bottom-0 left-0 w-36 h-36 rounded-full bg-[#F5A623]/20 translate-y-1/3 -translate-x-1/3"></div>
+        <!-- Pattern lines -->
+        <svg class="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="0" y1="60"  x2="300" y2="60"  stroke="white" stroke-width="0.5"/>
+          <line x1="0" y1="120" x2="300" y2="120" stroke="white" stroke-width="0.5"/>
+          <line x1="0" y1="180" x2="300" y2="180" stroke="white" stroke-width="0.5"/>
+          <line x1="0" y1="240" x2="300" y2="240" stroke="white" stroke-width="0.5"/>
+          <line x1="60"  y1="0" x2="60"  y2="300" stroke="white" stroke-width="0.5"/>
+          <line x1="120" y1="0" x2="120" y2="300" stroke="white" stroke-width="0.5"/>
+          <line x1="180" y1="0" x2="180" y2="300" stroke="white" stroke-width="0.5"/>
+          <line x1="240" y1="0" x2="240" y2="300" stroke="white" stroke-width="0.5"/>
+        </svg>
+
+        <div class="relative z-10">
+          <div class="text-[#F5A623] text-xs font-semibold tracking-widest uppercase mb-3">Since 2026</div>
+          <h3 class="font-display text-3xl font-bold mb-2">Enjoy History<br><em>on Foot</em></h3>
+          <p class="text-white/65 text-sm leading-relaxed max-w-xs">Temukan cerita di balik setiap tempat bersama Danke Malang.</p>
+        </div>
+      </div>
+      <!-- Floating badge -->
+      <div class="absolute -bottom-5 -left-5 bg-[#F5A623] text-white rounded-2xl px-5 py-3 shadow-xl">
+        <div class="font-display text-2xl font-bold">10+</div>
+        <div class="text-xs font-semibold">Destinasi</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     5. ROUTES
+═══════════════════════════════════════════════ -->
+<section id="rute" class="bg-white py-20 px-[5%]">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-14">
+      <span class="text-xs font-semibold tracking-widest uppercase text-[#1A73C8]">Pilih Perjalanan Anda</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold mt-3 text-[#181818]">Rute Tur Kami</h2>
+      <p class="text-gray-500 mt-4 max-w-md mx-auto text-sm leading-relaxed">Tiga rute unik yang membawa Anda menjelajahi sudut-sudut bersejarah di Kota Malang.</p>
+    </div>
+
+    <!-- Cards -->
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <!-- Route 1 -->
+      <div class="rounded-2xl border border-gray-100 overflow-hidden shadow-sm card-hover">
+        <div class="route-img h-44 flex flex-col justify-between p-5 relative">
+          <span class="relative z-10 bg-[#F5A623] text-white text-xs font-bold px-3 py-1 rounded-full self-start">Rute 01</span>
+          <h3 class="relative z-10 font-display text-xl font-bold text-white leading-tight">Kajoetangan<br>– Tjelaket</h3>
+        </div>
+        <div class="p-6">
+          <span class="inline-block bg-[#E6F1FB] text-[#1A73C8] text-xs font-bold px-3 py-1 rounded-full mb-4">Rp 60.000 / orang</span>
+          <ul class="space-y-2 mb-5">
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Gereja Katholik Paroki Bunda Hati Kudus</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Monumen Chairil Anwar</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Kampung Heritage Kajoetangan</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Stadsklok depan PLN</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Sekolah Frateran &amp; Cor Jesu</li>
+          </ul>
+          <div class="flex flex-wrap gap-1.5 mb-5">
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇮🇩 Indonesia</span>
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇬🇧 English</span>
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇩🇪 Germany</span>
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇨🇳 Chinese</span>
+          </div>
+          <a href="https://wa.me/6285159883504?text=Halo%20Danke%20Malang!%20Saya%20ingin%20pesan%20rute%20Kajoetangan-Tjelaket"
+             target="_blank"
+             class="block text-center bg-[#1A73C8] hover:bg-[#0D4F8C] text-white text-sm font-semibold py-2.5 rounded-full transition-colors">
+            Pesan Rute Ini
+          </a>
+        </div>
+      </div>
+
+      <!-- Route 2 -->
+      <div class="rounded-2xl border border-gray-100 overflow-hidden shadow-sm card-hover">
+        <div class="route-img h-44 flex flex-col justify-between p-5 relative">
+          <span class="relative z-10 bg-[#F5A623] text-white text-xs font-bold px-3 py-1 rounded-full self-start">Rute 02</span>
+          <h3 class="relative z-10 font-display text-xl font-bold text-white leading-tight">Alun-alun<br>– Pasar Besar</h3>
+        </div>
+        <div class="p-6">
+          <span class="inline-block bg-[#E6F1FB] text-[#1A73C8] text-xs font-bold px-3 py-1 rounded-full mb-4">Rp 60.000 / orang</span>
+          <ul class="space-y-2 mb-5">
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Gedung Sarinah</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Alun-alun Kota Malang</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>GPIB Immanuel &amp; Masjid Agung Jami</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Hotel Pelangi &amp; Toko Madjoe</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Pasar Besar</li>
+          </ul>
+          <div class="flex flex-wrap gap-1.5 mb-5">
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇮🇩 Indonesia</span>
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇬🇧 English</span>
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇩🇪 Germany</span>
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇨🇳 Chinese</span>
+          </div>
+          <a href="https://wa.me/6285159883504?text=Halo%20Danke%20Malang!%20Saya%20ingin%20pesan%20rute%20Alun-alun-Pasar%20Besar"
+             target="_blank"
+             class="block text-center bg-[#1A73C8] hover:bg-[#0D4F8C] text-white text-sm font-semibold py-2.5 rounded-full transition-colors">
+            Pesan Rute Ini
+          </a>
+        </div>
+      </div>
+
+      <!-- Route 3 -->
+      <div class="rounded-2xl border border-gray-100 overflow-hidden shadow-sm card-hover">
+        <div class="route-img h-44 flex flex-col justify-between p-5 relative">
+          <span class="relative z-10 bg-[#F5A623] text-white text-xs font-bold px-3 py-1 rounded-full self-start">Rute 03</span>
+          <h3 class="relative z-10 font-display text-xl font-bold text-white leading-tight">Tugu<br>– Splendid</h3>
+        </div>
+        <div class="p-6">
+          <span class="inline-block bg-[#E6F1FB] text-[#1A73C8] text-xs font-bold px-3 py-1 rounded-full mb-4">Rp 60.000 / orang</span>
+          <ul class="space-y-2 mb-5">
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Wisma Bella Vista &amp; Balai Kota</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Kompleks Sekolah &amp; Wisma Tumapel</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Jembatan Splendid</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>SD Brawijaya</li>
+            <li class="flex items-start gap-2 text-sm text-gray-600"><span class="text-[#1A73C8] mt-0.5">●</span>Pasar Burung</li>
+          </ul>
+          <div class="flex flex-wrap gap-1.5 mb-5">
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇮🇩 Indonesia</span>
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇬🇧 English</span>
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇩🇪 Germany</span>
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">🇨🇳 Chinese</span>
+          </div>
+          <a href="https://wa.me/6285159883504?text=Halo%20Danke%20Malang!%20Saya%20ingin%20pesan%20rute%20Tugu-Splendid"
+             target="_blank"
+             class="block text-center bg-[#1A73C8] hover:bg-[#0D4F8C] text-white text-sm font-semibold py-2.5 rounded-full transition-colors">
+            Pesan Rute Ini
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     6. PRE-TEST
+═══════════════════════════════════════════════ -->
+<section id="pretest" class="bg-[#181818] py-20 px-[5%]">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-14">
+      <span class="text-xs font-semibold tracking-widest uppercase text-[#F5A623]">Uji Pengetahuan Anda</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold mt-3 text-white">Pre-test Sebelum Tur</h2>
+      <p class="text-white/50 mt-4 max-w-md mx-auto text-sm leading-relaxed">Seberapa jauh kamu mengenal Kota Malang? Coba pre-test sesuai rute pilihan sebelum memulai perjalanan.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-7">
+
+      <!-- Pretest 1 -->
+      <div class="glass-card rounded-2xl p-7 card-hover">
+        <div class="w-10 h-10 rounded-xl bg-[#1A73C8]/20 flex items-center justify-center text-[#1A73C8] font-display font-bold text-lg mb-5">1</div>
+        <h3 class="font-display text-xl font-bold text-white mb-2">Kajoetangan – Tjelaket</h3>
+        <p class="text-white/50 text-sm leading-relaxed mb-6">Uji pengetahuan Anda tentang kawasan Kajoetangan dan Tjelaket sebelum menjelajah bersama kami.</p>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSddhfn2NVKOvLZvkx4pv8-PJ4-WLzHOQm3LHgDqlPM8VtRwyA/viewform?usp=header"
+           target="_blank"
+           class="inline-flex items-center gap-2 bg-[#1A73C8] hover:bg-[#0D4F8C] text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors">
+          Mulai Pre-test →
+        </a>
+      </div>
+
+      <!-- Pretest 2 -->
+      <div class="glass-card rounded-2xl p-7 card-hover">
+        <div class="w-10 h-10 rounded-xl bg-[#1A73C8]/20 flex items-center justify-center text-[#1A73C8] font-display font-bold text-lg mb-5">2</div>
+        <h3 class="font-display text-xl font-bold text-white mb-2">Alun-alun – Pasar Besar</h3>
+        <p class="text-white/50 text-sm leading-relaxed mb-6">Cek seberapa dalam pengetahuan Anda tentang jantung Kota Malang dan kawasan pasar bersejarah.</p>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfmKEyRbo7tZY8yuZGTlZHIiAcWT0mYNJkL7C-ZbSBFXvngaw/viewform?usp=publish-editor"
+           target="_blank"
+           class="inline-flex items-center gap-2 bg-[#1A73C8] hover:bg-[#0D4F8C] text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors">
+          Mulai Pre-test →
+        </a>
+      </div>
+
+      <!-- Pretest 3 -->
+      <div class="glass-card rounded-2xl p-7 card-hover">
+        <div class="w-10 h-10 rounded-xl bg-[#1A73C8]/20 flex items-center justify-center text-[#1A73C8] font-display font-bold text-lg mb-5">3</div>
+        <h3 class="font-display text-xl font-bold text-white mb-2">Tugu – Splendid</h3>
+        <p class="text-white/50 text-sm leading-relaxed mb-6">Kenali lebih dalam kawasan Tugu dan Splendid yang penuh warisan arsitektur kolonial bersejarah.</p>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSf-qUpSj9rGXZk47sMQ_9Hdu9E-vC6Ses6EtEOra10HaGT3Wg/viewform?usp=publish-editor"
+           target="_blank"
+           class="inline-flex items-center gap-2 bg-[#1A73C8] hover:bg-[#0D4F8C] text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors">
+          Mulai Pre-test →
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     7. WHY DANKE MALANG
+═══════════════════════════════════════════════ -->
+<section class="bg-gray-50 py-20 px-[5%]">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-14">
+      <span class="text-xs font-semibold tracking-widest uppercase text-[#1A73C8]">Keunggulan Kami</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold mt-3 text-[#181818]">Mengapa Danke Malang?</h2>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+      <div class="bg-white rounded-2xl p-6 text-center card-hover shadow-sm">
+        <div class="text-4xl mb-4">🏛️</div>
+        <h3 class="font-semibold text-[#181818] mb-2 text-sm">Autentik dan Berkesan</h3>
+        <p class="text-gray-500 text-xs leading-relaxed">Nikmati wisata yang informatif dan otentik, bukan sekadar foto-foto biasa.</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 text-center card-hover shadow-sm">
+        <div class="text-4xl mb-4">🌍</div>
+        <h3 class="font-semibold text-[#181818] mb-2 text-sm">4 Bahasa Tersedia</h3>
+        <p class="text-gray-500 text-xs leading-relaxed">Cocok untuk wisatawan domestik dan mancanegara dengan panduan multibahasa.</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 text-center card-hover shadow-sm">
+        <div class="text-4xl mb-4">📚</div>
+        <h3 class="font-semibold text-[#181818] mb-2 text-sm">Edukasi Berbasis Digital</h3>
+        <p class="text-gray-500 text-xs leading-relaxed">Platform e-learning yang mengintegrasikan konten sejarah dengan pariwisata.</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 text-center card-hover shadow-sm">
+        <div class="text-4xl mb-4">🏷️</div>
+        <h3 class="font-semibold text-[#181818] mb-2 text-sm">Harga Terjangkau</h3>
+        <p class="text-gray-500 text-xs leading-relaxed">Hanya Rp 60.000/orang termasuk tiket ke semua destinasi dalam rute.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     8. TESTIMONIALS
+═══════════════════════════════════════════════ -->
+<section id="testimoni" class="bg-white py-20 px-[5%]">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-14">
+      <span class="text-xs font-semibold tracking-widest uppercase text-[#1A73C8]">Kata Mereka</span>
+      <h2 class="font-display text-4xl md:text-5xl font-bold mt-3 text-[#181818]">Testimoni Peserta</h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-7">
+
+      <!-- Tamara -->
+      <div class="border border-gray-100 rounded-2xl p-7 card-hover shadow-sm">
+        <div class="text-[#F5A623] text-2xl mb-4">"</div>
+        <p class="text-gray-700 text-sm leading-relaxed mb-6">Jyujur ga nyangka, ternyata di Malang banyak banget tempat yang kental dengan sejarah. Kalian wajib coba sih!</p>
+        <div class="flex items-center gap-3">
+          <div class="avatar w-10 h-10 rounded-full bg-[#1A73C8] text-white flex items-center justify-center font-bold text-sm">T</div>
+          <div>
+            <div class="font-semibold text-[#181818] text-sm">Tamara</div>
+            <div class="text-yellow-400 text-xs">★★★★★</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sam -->
+      <div class="border border-gray-100 rounded-2xl p-7 card-hover shadow-sm">
+        <div class="text-[#F5A623] text-2xl mb-4">"</div>
+        <p class="text-gray-700 text-sm leading-relaxed mb-6">Highly recommended for anyone who loves history and heritage. The guide was incredibly knowledgeable!</p>
+        <div class="flex items-center gap-3">
+          <div class="avatar w-10 h-10 rounded-full bg-[#0D4F8C] text-white flex items-center justify-center font-bold text-sm">S</div>
+          <div>
+            <div class="font-semibold text-[#181818] text-sm">Sam</div>
+            <div class="text-yellow-400 text-xs">★★★★★</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Harry -->
+      <div class="border border-gray-100 rounded-2xl p-7 card-hover shadow-sm">
+        <div class="text-[#F5A623] text-2xl mb-4">"</div>
+        <p class="text-gray-700 text-sm leading-relaxed mb-6">Bukan cuma wisata biasa, tapi luar biasa. Jadi lebih tau sejarah Kota Malang yang selama aku ga tau.</p>
+        <div class="flex items-center gap-3">
+          <div class="avatar w-10 h-10 rounded-full bg-[#F5A623] text-white flex items-center justify-center font-bold text-sm">H</div>
+          <div>
+            <div class="font-semibold text-[#181818] text-sm">Harry</div>
+            <div class="text-yellow-400 text-xs">★★★★★</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Erwin -->
+      <div class="border border-gray-100 rounded-2xl p-7 card-hover shadow-sm">
+        <div class="text-[#F5A623] text-2xl mb-4">"</div>
+        <p class="text-gray-700 text-sm leading-relaxed mb-6">Seru banget ikut walking tour, karena guidenya ramah dan asik poll. Matur nuwun Danke Malang!</p>
+        <div class="flex items-center gap-3">
+          <div class="avatar w-10 h-10 rounded-full bg-[#181818] text-white flex items-center justify-center font-bold text-sm">E</div>
+          <div>
+            <div class="font-semibold text-[#181818] text-sm">Erwin</div>
+            <div class="text-yellow-400 text-xs">★★★★★</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     9. CTA SECTION
+═══════════════════════════════════════════════ -->
+<section class="bg-[#1A73C8] py-24 px-[5%] text-center relative overflow-hidden">
+  <!-- Decorative circles -->
+  <div class="absolute top-0 left-0 w-72 h-72 rounded-full bg-white/5 -translate-x-1/2 -translate-y-1/2"></div>
+  <div class="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-white/5 translate-x-1/3 translate-y-1/3"></div>
+
+  <div class="relative z-10">
+    <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-4">Siap Menjelajahi Malang?</h2>
+    <p class="text-white/70 max-w-md mx-auto text-sm leading-relaxed mb-10">
+      Pesan tur Anda sekarang dan mulailah perjalanan bersejarah yang tak terlupakan bersama Danke Malang.
+    </p>
+    <a href="https://wa.me/6285159883504" target="_blank"
+       class="inline-block bg-white text-[#1A73C8] font-bold px-8 py-3.5 rounded-full hover:shadow-xl hover:scale-105 transition-all text-sm">
+      Pesan via WhatsApp
+    </a>
+    <div class="mt-6 text-white/60 text-sm">📞 +62 851-5988-3504</div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     10. FOOTER
+═══════════════════════════════════════════════ -->
+<footer class="bg-[#181818] py-10 px-[5%]">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+    <img src="logo_Danke_Malang_type_2.png" alt="Danke Malang"
+         class="h-9 w-auto object-contain"
+         style="filter: brightness(0) invert(1) opacity(0.55);"
+         onerror="this.style.display='none'; this.nextSibling.style.display='block'" />
+    <span style="display:none; color:rgba(255,255,255,0.55); font-family:'Playfair Display',serif; font-weight:700; font-size:1.1rem;">Danke Malang</span>
+    <p class="text-white/40 text-xs text-center md:text-right leading-relaxed">
+      © 2026 Danke Malang. Jelajahi Malang, Temukan Sejarahnya.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
